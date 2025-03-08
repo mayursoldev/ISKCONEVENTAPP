@@ -69,6 +69,29 @@ export const GlobalProvider = ({ children }) => {
         }
     };
 
+
+    //addingEvents, updating events
+    // const addEvent = async (newEvent) => {
+    //   try {
+    //     const response = await fetch(`${API_BASE_URL}/events`, {
+    //       method: "POST",
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //       },
+    //       body: JSON.stringify(newEvent),
+    //     });
+  
+    //     if (response.ok) {
+    //       const savedEvent = await response.json();
+    //       setEvents((prevEvents) => [...prevEvents, savedEvent]);
+    //     } else {
+    //       console.error("Failed to add event");
+    //     }
+    //   } catch (error) {
+    //     console.error("Error adding event:", error);
+    //   }
+    // };
+
     // Logout
     const logout = () => {
         setUser({ token: null, role: null, name: null });
