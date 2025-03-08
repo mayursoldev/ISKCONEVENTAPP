@@ -34,15 +34,23 @@ router.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
     const user = await db("users").where({ email }).first();
-    if (!user) return res.status(401).json({ message: "Invalid credentials" });
+    if (!user) return res.status(401).json({ message: "Invalid credentials, User not found" });
 
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
     if (!isPasswordValid) return res.status(401).json({ message: "Invalid credentials" });
 
     // Generate JWT token
-    const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign({ id: user.id, role: user.role, name: user.name }, JWT_SECRET, { expiresIn: "1h" });
+    console.log("token", token)
 
-    res.json({ message: "Login successful", token });
+    res.json({ 
+        success: true, message: "Login successful", token, 
+        user: {
+            id: user.id,
+            role: user.role,
+            name: user.name
+        }
+    });
   } catch (error) {
     console.error("Login failed:", error);
     res.status(500).json({ message: "Login failed", error });

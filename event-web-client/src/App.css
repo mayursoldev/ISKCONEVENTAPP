@@ -107,29 +107,51 @@ h1, h2, h3 {
 }
 
 /* Login Page */
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
+  background: #ffffff;
 }
 
 .login-card {
   background: white;
   padding: 30px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
   width: 400px;
   text-align: center;
 }
 
-.login-card input {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border: 1px solid #ccc;
+.btn-primary, .btn-success {
+  padding: 12px;
+  font-weight: bold;
   border-radius: 5px;
 }
+
+.card-body {
+  padding: 30px;
+}
+
+.form-label {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.form-control {
+  padding: 12px;
+  border-radius: 8px;
+}
+
 
 /* Event List */
 .event-card {

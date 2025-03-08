@@ -4,57 +4,83 @@ import axios from "axios";
 const GlobalContext = createContext();
 
 export const GlobalProvider = ({ children }) => {
-  const [user, setUser] = useState({ token: null, role: null });
-  let eventDummy = [{ id: 1, title: "React Workshop", date: "2025-02-01", category: "Workshop", location: "Tech Park" },
-  { id: 2, title: "SQL Mastery", date: "2025-02-15", category: "Seminar", location: "Convention Center" }]
-  const [events, setEvents] = useState(eventDummy);
+    const [user, setUser] = useState({ token: null, role: null });
+    const [events, setEvents] = useState([]);
 
-  // Load user data from sessionStorage (for persistence)
-  useEffect(() => {
-    const savedUser = sessionStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    
-  }, []);
+    const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-  // Fetch events from API
-  const fetchEvents = async () => {
-    try {
-      const response = await axios.get("https://api.example.com/events");
-      response ? setEvents(response.data) : setEvents(eventDummy);
-    } catch (error) {
-      console.error("Failed to fetch events:", error);
-    }
-  };
+    // Load user data from sessionStorage (for persistence)
+    useEffect(() => {
+        const savedUser = sessionStorage.getItem("user");
+        if (savedUser) {
+            setUser(JSON.parse(savedUser));
+            fetchEvents();
+        }
+    }, []);
 
-  const login = (email, password) => {
-    if (email === "admin" && password === "admin123") {
-      const userData = { token: "fake-token", role: "admin", name: "admin Name"};
-      setUser(userData);
-      sessionStorage.setItem("user", JSON.stringify(userData));
-      //fetchEvents(); // Fetch events on successful login
-    } else if (email === "user" && password === "user123") {
-      const userData = { token: "fake-token", role: "user", name: "user Name" };
-      setUser(userData);
-      sessionStorage.setItem("user", JSON.stringify(userData));
-      //fetchEvents(); // Fetch events on successful login
-    } else {
-      alert("Invalid credentials!");
-    }
-  };
+    // Login with API
+    const login = async (email, password) => {
+        try {
+            const response = await axios.post(`${API_BASE_URL}/auth/login`, { email, password });
 
-  const logout = () => {
-    setUser({ token: null, role: null, name: null });
-    setEvents([]); // Clear events on logout
-    sessionStorage.removeItem("user");
-  };
+            if (response.data.token) {
+                const userData = { 
+                    token: response.data.token, 
+                    role: response.data.user.role, 
+                    name: response.data.user.name 
+                };
 
-  return (
-    <GlobalContext.Provider value={{ user, events, fetchEvents, login, logout }}>
-      {children}
-    </GlobalContext.Provider>
-  );
+                setUser(userData);
+                sessionStorage.setItem("user", JSON.stringify(userData));
+
+                fetchEvents();
+            }
+        } catch (error) {
+            alert("Invalid credentials or server error!");
+            console.error("Login failed:", error);
+        }
+    };
+
+    // Signup with API
+    const signup = async (name, email, password) => {
+        try {
+            const response = await axios.post(`${API_BASE_URL}/auth/register`, { name, email, password });
+
+            if (response.status === 201) {
+                alert("Signup successful! Please log in.");
+            }
+        } catch (error) {
+            alert("Signup failed. Try again!");
+            console.error("Signup error:", error);
+        }
+    };
+
+    // Fetch events
+    const fetchEvents = async () => {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/events`, {
+                headers: { Authorization: `Bearer ${user.token}` },
+            });
+
+            setEvents(response.data);
+        } catch (error) {
+            console.error("Failed to fetch events:", error);
+            setEvents([]);
+        }
+    };
+
+    // Logout
+    const logout = () => {
+        setUser({ token: null, role: null, name: null });
+        setEvents([]);
+        sessionStorage.removeItem("user");
+    };
+
+    return (
+        <GlobalContext.Provider value={{ user, events, fetchEvents, login, signup, logout }}>
+            {children}
+        </GlobalContext.Provider>
+    );
 };
 
 export default GlobalContext;
