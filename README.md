@@ -210,7 +210,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 For questions or feedback, please reach out to:
 
-- Your Name  
+- Mayur Solanki
   Email: mayursolankiprofessional@gmail.com
   GitHub: https://github.com/mayursoldev
 
