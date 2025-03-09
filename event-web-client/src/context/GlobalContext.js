@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect } from "react";
 import axios from "axios";
+import { FetchLocations } from "../service/location-service";
 
 const GlobalContext = createContext();
 
@@ -70,6 +71,9 @@ export const GlobalProvider = ({ children }) => {
             setEvents([]);
         }
     };
+
+    
+   
 
     
 

@@ -3,7 +3,7 @@ import { Container, Row, Col, Card, Button, Pagination } from "react-bootstrap";
 import { fetchUserRegisteredEvents } from "../service/event-service";
 import { formatDate } from "../common/commonMethods";
 
-function RegisteredEvents({ user }) {
+function RegisteredEvents({ user, locationData}) {
     const [registeredEvents, setRegisteredEvents] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const eventsPerPage = 5;
@@ -31,7 +31,7 @@ function RegisteredEvents({ user }) {
     return (
         <Container className="mt-4">
             <Row xs={1} md={2} lg={3} className="g-4">
-                {currentEvents.length > 0 ? (
+                {locationData &&currentEvents.length > 0 ? (
                     currentEvents.map((event) => (
                         <Col key={event.id}>
                             <Card className="shadow-sm">
@@ -44,8 +44,10 @@ function RegisteredEvents({ user }) {
                                         <strong>Category:</strong> {event.category}
                                     </Card.Text>
                                     <Card.Text>
-                                        <strong>Location ID:</strong> {event.location_id}
-                                    </Card.Text>
+    <strong>Location:</strong> 
+    {locationData.find((obj) => obj.id === event.location_id)?.name || "Unknown Location"}
+</Card.Text>
+
                                 </Card.Body>
                             </Card>
                         </Col>

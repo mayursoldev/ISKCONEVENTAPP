@@ -2,9 +2,11 @@ import { useContext, useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import { X } from 'react-feather';
 import GlobalContext from "../context/GlobalContext";
+import { showConfirmationDialog } from "../common/commonMethods";
+import Swal from "sweetalert2";
 
-function AddEventModal({ show, handleClose, availableLocations, user, rowData }) {
-    console.log("userInfo", user, rowData);
+function AddEventModal({ show, handleClose, availableLocations, user, rowData, action }) {
+    console.log("userInfo", action);
     const { addEvent } = useContext(GlobalContext);
 
     const defaultObj = {
@@ -16,16 +18,18 @@ function AddEventModal({ show, handleClose, availableLocations, user, rowData })
         created_by: user.id
     };
 
-    const [eventObj, setEventObj] = useState(rowData || defaultObj);
+    const [eventObj, setEventObj] = useState(action == 'Edit' ? rowData : defaultObj);
     const [errors, setErrors] = useState({});
 
     // Sync rowData with eventObj when editing
     useEffect(() => {
-        if (rowData) {
-            setEventObj(rowData);
+        if (action === 'Edit' && rowData) {
+            setEventObj(rowData); // Fill data for Edit
+        } else {
+            setEventObj(defaultObj); // Reset for Add
         }
-    }, [rowData]);
-
+    }, [rowData, action]);
+    
     const handleChange = (e) => {
         const { name, value } = e.target;
         setEventObj((prev) => ({ ...prev, [name]: value }));
@@ -44,26 +48,64 @@ function AddEventModal({ show, handleClose, availableLocations, user, rowData })
     };
 
     const handleReset = () => {
-        setEventObj(rowData || defaultObj); // Reset to rowData if editing, or default
+        setEventObj(action == 'Edit' ? rowData : defaultObj); // Reset to rowData if editing, or default
         setErrors({});
     };
 
     const handleSubmit = async () => {
         if (validateForm()) {
-            console.log("InAddEvent", eventObj);
-            eventObj.created_by = user.id;
+          eventObj.created_by = user.id;
+      
+          if (action === "Edit") {
+            showConfirmationDialog(
+              "Update Event",
+              `Do you really want to update the event '${eventObj.title}'?`,
+              async () => {
+                const result = await addEvent(eventObj);
+                Swal.fire({
+                  title: "Updated!",
+                  text: "You have successfully updated the event.",
+                  icon: "success",
+                  confirmButtonText: "OK",
+                }).then(() => {
+                  handleClose();
+                  handleReset();
+                  window.location.reload()
+                  // Refresh event list
+                });
+              }
+            );
+          } else {
             const result = await addEvent(eventObj);
-            console.log(result);
-            handleClose();
-            handleReset();
+            Swal.fire({
+              title: "Success!",
+              text:  "You have successfully added the event.",
+              icon: "success",
+              confirmButtonText: "OK",
+            }).then(() => {
+              handleClose();
+              handleReset();
+              window.location.reload()
+             // Refresh event list
+            });
+          }
         }
+     
+      };
+      
+    const handleCloseAction = async () => {
+        
+            handleReset();
+            handleClose();
+
+        
     };
 
     return (
         <Modal show={show} onHide={handleClose} centered>
             <Modal.Header>
                 <Modal.Title>{rowData ? "Edit Event" : "Add New Event"}</Modal.Title>
-                <Button variant="link" onClick={handleClose} className="ms-auto">
+                <Button variant="link" onClick={handleCloseAction} className="ms-auto">
                     <X size={24} />
                 </Button>
             </Modal.Header>

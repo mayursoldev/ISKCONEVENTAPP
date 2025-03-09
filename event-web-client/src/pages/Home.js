@@ -4,31 +4,42 @@ import { PlusCircle, PenTool, Trash, UserPlus } from 'react-feather';
 import GlobalContext from "../context/GlobalContext";
 import AddEventModal from "./AddEventModal";
 import { FetchLocations } from "../service/location-service";
-import { formatDate } from "../common/commonMethods";
+import {   formatDate, showConfirmationDialog } from "../common/commonMethods";
 import { deleteEvent, registerForEvent } from "../service/event-service";
 import RegisteredEvents from "./MyRegistrations";
 import AdminRegistrations from "./AdminRegistrations";
+import Swal from "sweetalert2";
 
 function Home() {
   const { events, fetchEvents, user } = useContext(GlobalContext);
   const [currentPage, setCurrentPage] = useState(1);
-  const [filters, setFilters] = useState({ date: "", category: "", location: "" });
+  const [filters, setFilters] = useState({ date: "", category: "", location_id: "" });
   const [showAddEventModal, setShowAddEventModal] = useState(false);
   const [availableLocations, setAvailableLocations] = useState([]);
   const [rowData, setRowdata] = useState();
   const [generalEvents, setGeneralEvents] = useState(true);
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [action, setAction] = useState('Add');
+  const [locationData, setLocationData] = useState([]); 
   const eventsPerPage = 6;
   const userRole = user.role;
 
   useEffect(() => {
     if (events.length === 0) {
       fetchEvents();
+     FetchLocation()
+
     }
   }, [events, fetchEvents]);
+  const FetchLocation = async ()=>{
+    let locationData = await FetchLocations(user);
+    console.log(locationData)
+    setLocationData(locationData)
+  }
 
   const handleAddEvent = async () => {
     let locationData = await FetchLocations(user);
+    setAction("Add")
     setAvailableLocations(locationData);
     setShowAddEventModal(true);
   };
@@ -40,30 +51,59 @@ function Home() {
     setAvailableLocations(locationData);
     e.date = formatDate(e.date);
     setRowdata(e);
+    setAction("Edit")
     setShowAddEventModal(true);
   };
 
-  const handleDelete = async (eventId, eventTitle) => {
-    if (window.confirm("Do you really want to delete Event?")) {
-      const result = await deleteEvent(eventId, eventTitle);
-      alert(result.message);
-    }
+  const handleDelete = (eventId, eventTitle) => {
+    showConfirmationDialog(
+      "Delete Event",
+      `Do you really want to delete the event "${eventTitle}"?`,
+      async () => {
+        const result = await deleteEvent(eventId, eventTitle);
+        Swal.fire({
+          title: "Deleted!",
+          text: result.message,
+          icon: "success",
+          confirmButtonText: "OK",
+        }).then(() => {
+          fetchEvents(); // Refresh event list
+        });
+      }
+    );
   };
+  
 
   const handleRegister = async (user, event) => {
-    if (window.confirm(`Are you sure you want to register for event '${event.title}'?`)) {
-      const result = await registerForEvent(user.id, event.id, event.title);
-      alert(result.message);
-    }
+    showConfirmationDialog(
+      "Register for Event",
+      `Are you sure you want to register for the event '${event.title}'?`,
+      async () => {
+        const result = await registerForEvent(user.id, event.id, event.title);
+        Swal.fire({
+          title: "Registered!",
+          text: result.message,
+          icon: "success",
+          confirmButtonText: "OK",
+        }).then(() => {
+          fetchEvents(); // Refresh event list or update registration status
+        });
+      }
+    );
   };
-
+  
   const filteredEvents = events.filter((event) => {
     return (
       (!filters.date || event.date.includes(filters.date)) &&
       (!filters.category || event.category.toLowerCase().includes(filters.category.toLowerCase())) &&
-      (!filters.location || event.location.toLowerCase().includes(filters.location.toLowerCase()))
+      (!filters.location_id || 
+        locationData?.find((loc) => loc.id === event.location_id)?.name.toLowerCase().includes(filters.location_id.toLowerCase()))
     );
   });
+  
+
+  
+ 
 
   const handleMyRegistrations= async () =>{
         setGeneralEvents(false)
@@ -125,7 +165,7 @@ function Home() {
               <Form.Control
                 type="text"
                 placeholder="Filter by Location"
-                onChange={(e) => setFilters({ ...filters, location: e.target.value })}
+                onChange={(e) => setFilters({ ...filters, location_id: e.target.value })}
               />
               <Form.Label>Location</Form.Label>
             </Form.Floating>
@@ -152,7 +192,7 @@ function Home() {
         </Row>
       </Card>
 
-      {generalEvents ?  (
+      {locationData && generalEvents ?  (
         <Card className="p-3 shadow-sm">
           <Row xs={1} md={2} lg={3} className="g-4">
             {currentEvents.length > 0 ? (
@@ -174,18 +214,24 @@ function Home() {
                       </Card.Title>
                       <Card.Text>{event.description}</Card.Text>
                       <Card.Text><strong>Date:</strong> {formatDate(event.date)}</Card.Text>
-                      <Card.Text><strong>Location:</strong> {event.location}</Card.Text>
-                    </Card.Body>
+                      <Card.Text>
+  <strong>Location:</strong> 
+  {locationData?.find((obj) => obj.id === event.location_id)?.name || "Unknown Location"}
+</Card.Text>
+
+
+
+                       </Card.Body>
                   </Card>
                 </Col>
               ))
             ) : (
-              <AdminRegistrations/>
+          <h1>No Data as searched</h1>
             )}
           </Row>
         </Card>
       ) : (
-        <RegisteredEvents user={user}/>
+        <RegisteredEvents user={user} locationData={locationData} filteredEvents={filteredEvents} />
       )}
 
       {filteredEvents.length > eventsPerPage && (
@@ -204,10 +250,10 @@ function Home() {
         </Pagination>
       )}
 
-      <AddEventModal show={showAddEventModal} handleClose={handleCloseModal} availableLocations={availableLocations} user={user} rowData={rowData} />
+      <AddEventModal show={showAddEventModal} handleClose={handleCloseModal} availableLocations={availableLocations} user={user} rowData={rowData} action={action} />
             </>
           ) : (
-            <AdminRegistrations/>
+            <AdminRegistrations locationData= {locationData}/>
           )}
         </Col>
       </Row>
