@@ -6,6 +6,7 @@ const GlobalContext = createContext();
 export const GlobalProvider = ({ children }) => {
     const [user, setUser] = useState({ token: null, role: null });
     const [events, setEvents] = useState([]);
+    const [locations, setLocations] = useState([]);
 
     const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -26,6 +27,7 @@ export const GlobalProvider = ({ children }) => {
             if (response.data.token) {
                 const userData = { 
                     token: response.data.token, 
+                    id: response.data.user.id,
                     role: response.data.user.role, 
                     name: response.data.user.name 
                 };
@@ -69,28 +71,30 @@ export const GlobalProvider = ({ children }) => {
         }
     };
 
+    
+
 
     //addingEvents, updating events
-    // const addEvent = async (newEvent) => {
-    //   try {
-    //     const response = await fetch(`${API_BASE_URL}/events`, {
-    //       method: "POST",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //       },
-    //       body: JSON.stringify(newEvent),
-    //     });
+    const addEvent = async (newEvent) => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/events/addOrUpdate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newEvent),
+        });
   
-    //     if (response.ok) {
-    //       const savedEvent = await response.json();
-    //       setEvents((prevEvents) => [...prevEvents, savedEvent]);
-    //     } else {
-    //       console.error("Failed to add event");
-    //     }
-    //   } catch (error) {
-    //     console.error("Error adding event:", error);
-    //   }
-    // };
+        if (response.ok) {
+          const savedEvent = await response.json();
+          setEvents((prevEvents) => [...prevEvents, savedEvent]);
+        } else {
+          console.error("Failed to add event");
+        }
+      } catch (error) {
+        console.error("Error adding event:", error);
+      }
+    };
 
     // Logout
     const logout = () => {
@@ -100,7 +104,7 @@ export const GlobalProvider = ({ children }) => {
     };
 
     return (
-        <GlobalContext.Provider value={{ user, events, fetchEvents, login, signup, logout }}>
+        <GlobalContext.Provider value={{ user, events, fetchEvents, login, signup, logout, addEvent }}>
             {children}
         </GlobalContext.Provider>
     );

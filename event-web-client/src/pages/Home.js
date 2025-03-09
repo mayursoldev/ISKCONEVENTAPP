@@ -3,12 +3,18 @@ import { Container, Row, Col, Card, Form, Pagination, Button } from "react-boots
 import { PlusCircle, PenTool, Trash, UserPlus } from 'react-feather';
 import GlobalContext from "../context/GlobalContext";
 import AddEventModal from "./AddEventModal";
+import { FetchLocations } from "../service/location-service";
+import { formatDate } from "../common/commonMethods";
+import { deleteEvent } from "../service/event-service";
+
 
 function Home() {
   const { events, fetchEvents, user } = useContext(GlobalContext);
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState({ date: "", category: "", location: "" });
   const [showAddEventModal, setShowAddEventModal] = useState(false);
+  const [availableLocations, setAvailableLocations] = useState([])
+  const [rowData, setRowdata] = useState()
   const eventsPerPage = 5;
   const userRole = user.role;
 
@@ -18,8 +24,32 @@ function Home() {
     }
   }, [events, fetchEvents]);
 
-  const handleAddEvent = () => setShowAddEventModal(true);
+  const handleAddEvent = async () => {
+    let locationData = await FetchLocations(user);
+    console.log("locationData", locationData) 
+  
+    setAvailableLocations(locationData)
+    setShowAddEventModal(true);}
   const handleCloseModal = () => setShowAddEventModal(false);
+
+  const handleEdit= async (e) =>{
+    console.log("inhandleEdigt", e)
+    let locationData = await FetchLocations(user);
+    console.log("locationData", locationData) 
+    setAvailableLocations(locationData)
+    e.date = formatDate(e.date)
+    setRowdata(e)
+    setShowAddEventModal(true)
+  }
+
+
+const handleDelete = async (eventId, eventTitle) => {
+    if (window.confirm("Do you really want to delete Event?")) {
+        const result = await deleteEvent(eventId, eventTitle);
+        alert(result.message); // Show success or error message
+    }
+};
+
 
   const filteredEvents = events.filter((event) => {
     return (
@@ -100,8 +130,8 @@ function Home() {
                       {event.title}
                       {userRole === "admin" ? (
                         <span>
-                          <PenTool size={20} className="text-warning me-2 cursor-pointer icon-hover" title="Edit Event" />
-                          <Trash size={20} className="text-danger cursor-pointer icon-hover" title="Delete Event" />
+                          <PenTool size={20} className="text-warning me-2 cursor-pointer icon-hover" title="Edit Event" onClick={(e)=>handleEdit(event)}/>
+                          <Trash size={20} className="text-danger cursor-pointer icon-hover" title="Delete Event" onClick={(e)=>handleDelete(event.id, event.title)}/>
                         </span>
                       ) : (
                         <Button variant="outline-primary" className="d-flex align-items-center icon-hover">
@@ -110,7 +140,7 @@ function Home() {
                       )}
                     </Card.Title>
                     <Card.Text>{event.description}</Card.Text>
-                    <Card.Text><strong>Date:</strong> {event.date}</Card.Text>
+                    <Card.Text><strong>Date:</strong> {formatDate(event.date)}</Card.Text>
                     <Card.Text><strong>Location:</strong> {event.location}</Card.Text>
                   </Card.Body>
                 </Card>
@@ -140,7 +170,7 @@ function Home() {
         </Pagination>
       )}
 
-      <AddEventModal show={showAddEventModal} handleClose={handleCloseModal} />
+      <AddEventModal show={showAddEventModal} handleClose={handleCloseModal} availableLocations = {availableLocations} user={user} rowData = {rowData}/>
     </Container>
   );
 }

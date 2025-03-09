@@ -1,19 +1,30 @@
-import { useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import { X } from 'react-feather';
+import GlobalContext from "../context/GlobalContext";
 
-function AddEventModal({ show, handleClose, addEvent }) {
+function AddEventModal({ show, handleClose, availableLocations, user, rowData }) {
+    console.log("userInfo", user, rowData);
+    const { addEvent } = useContext(GlobalContext);
 
     const defaultObj = {
         title: '',
         description: '',
         date: '',
         category: '',
-        location: ''
+        location_id: '',
+        created_by: user.id
     };
 
-    const [eventObj, setEventObj] = useState(defaultObj);
+    const [eventObj, setEventObj] = useState(rowData || defaultObj);
     const [errors, setErrors] = useState({});
+
+    // Sync rowData with eventObj when editing
+    useEffect(() => {
+        if (rowData) {
+            setEventObj(rowData);
+        }
+    }, [rowData]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -26,30 +37,32 @@ function AddEventModal({ show, handleClose, addEvent }) {
         if (!eventObj.description) newErrors.description = "Description is required";
         if (!eventObj.date) newErrors.date = "Date is required";
         if (!eventObj.category) newErrors.category = "Category is required";
-        if (!eventObj.location) newErrors.location = "Location is required";
+        if (!eventObj.location_id) newErrors.location_id = "Location is required";
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
     const handleReset = () => {
-        setEventObj(defaultObj);
+        setEventObj(rowData || defaultObj); // Reset to rowData if editing, or default
         setErrors({});
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (validateForm()) {
-            console.log("InAddEvent", eventObj)
-            // addEvent(eventObj);
-            // handleClose();
-            // handleReset();
+            console.log("InAddEvent", eventObj);
+            eventObj.created_by = user.id;
+            const result = await addEvent(eventObj);
+            console.log(result);
+            handleClose();
+            handleReset();
         }
     };
 
     return (
         <Modal show={show} onHide={handleClose} centered>
             <Modal.Header>
-                <Modal.Title>Add New Event</Modal.Title>
+                <Modal.Title>{rowData ? "Edit Event" : "Add New Event"}</Modal.Title>
                 <Button variant="link" onClick={handleClose} className="ms-auto">
                     <X size={24} />
                 </Button>
@@ -62,7 +75,7 @@ function AddEventModal({ show, handleClose, addEvent }) {
                             type="text"
                             placeholder="Enter event title"
                             name="title"
-                            value={eventObj.title}
+                            value={eventObj.title || ''}
                             onChange={handleChange}
                             isInvalid={!!errors.title}
                         />
@@ -76,7 +89,7 @@ function AddEventModal({ show, handleClose, addEvent }) {
                             rows={3}
                             placeholder="Enter event description"
                             name="description"
-                            value={eventObj.description}
+                            value={eventObj.description || ''}
                             onChange={handleChange}
                             isInvalid={!!errors.description}
                         />
@@ -88,7 +101,7 @@ function AddEventModal({ show, handleClose, addEvent }) {
                         <Form.Control
                             type="date"
                             name="date"
-                            value={eventObj.date}
+                            value={eventObj.date || ''}
                             onChange={handleChange}
                             isInvalid={!!errors.date}
                         />
@@ -101,7 +114,7 @@ function AddEventModal({ show, handleClose, addEvent }) {
                             type="text"
                             placeholder="Enter event category"
                             name="category"
-                            value={eventObj.category}
+                            value={eventObj.category || ''}
                             onChange={handleChange}
                             isInvalid={!!errors.category}
                         />
@@ -110,15 +123,20 @@ function AddEventModal({ show, handleClose, addEvent }) {
 
                     <Form.Group className="mb-3">
                         <Form.Label>Location</Form.Label>
-                        <Form.Control
-                            type="text"
-                            placeholder="Enter event location"
-                            name="location"
-                            value={eventObj.location}
+                        <Form.Select 
+                            name="location_id" 
+                            value={eventObj.location_id || ''} 
                             onChange={handleChange}
-                            isInvalid={!!errors.location}
-                        />
-                        <Form.Control.Feedback type="invalid">{errors.location}</Form.Control.Feedback>
+                            isInvalid={!!errors.location_id}
+                        >
+                            <option value="">Select Location</option>
+                            {availableLocations.map((loc) => (
+                                <option key={loc.id} value={loc.id}>
+                                    {loc.name}
+                                </option>
+                            ))}
+                        </Form.Select>
+                        <Form.Control.Feedback type="invalid">{errors.location_id}</Form.Control.Feedback>
                     </Form.Group>
                 </Form>
             </Modal.Body>
