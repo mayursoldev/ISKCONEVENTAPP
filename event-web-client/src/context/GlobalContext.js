@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect } from "react";
 import axios from "axios";
 import { FetchLocations } from "../service/location-service";
+import Swal from "sweetalert2";
 
 const GlobalContext = createContext();
 
@@ -24,7 +25,7 @@ export const GlobalProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             const response = await axios.post(`${API_BASE_URL}/auth/login`, { email, password });
-
+    
             if (response.data.token) {
                 const userData = { 
                     token: response.data.token, 
@@ -32,28 +33,51 @@ export const GlobalProvider = ({ children }) => {
                     role: response.data.user.role, 
                     name: response.data.user.name 
                 };
-
+    
                 setUser(userData);
                 sessionStorage.setItem("user", JSON.stringify(userData));
-
+    
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Login Successful!',
+                    text: `Welcome back, ${response.data.user.name}!`,
+                    confirmButtonColor: '#28a745'
+                });
+    
                 fetchEvents();
             }
         } catch (error) {
-            alert("Invalid credentials or server error!");
+            Swal.fire({
+                icon: 'error',
+                title: 'Login Failed',
+                text: 'Invalid credentials or server error!',
+                confirmButtonColor: '#dc3545'
+            });
             console.error("Login failed:", error);
         }
     };
+    
 
     // Signup with API
     const signup = async (name, email, password) => {
         try {
             const response = await axios.post(`${API_BASE_URL}/auth/register`, { name, email, password });
-
+    
             if (response.status === 201) {
-                alert("Signup successful! Please log in.");
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Signup Successful!',
+                    text: 'Please log in to continue.',
+                    confirmButtonColor: '#28a745'
+                });
             }
         } catch (error) {
-            alert("Signup failed. Try again!");
+            Swal.fire({
+                icon: 'error',
+                title: 'Signup Failed',
+                text: 'Try again or contact support.',
+                confirmButtonColor: '#dc3545'
+            });
             console.error("Signup error:", error);
         }
     };

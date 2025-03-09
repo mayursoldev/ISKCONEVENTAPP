@@ -122,142 +122,161 @@ function Home() {
   const prevPage = () => currentPage > 1 && setCurrentPage((prevPage) => prevPage - 1);
 
   return (
-    <Container fluid>
-      <Row>
-        <Col md={2} className="bg-light p-3 border-end">
-          <Nav className="flex-column">
-            <Nav.Link active={activeTab === "dashboard"} onClick={() => userRole == 'admin' ? setActiveTab("dashboard"): setGeneralEvents(true)}>Dashboard</Nav.Link>
-            <Nav.Link active={activeTab === "registrations"} onClick={() => userRole == 'admin' ? setActiveTab("registrations") : handleMyRegistrations()}>Registrations</Nav.Link>
-          </Nav>
-        </Col>
+    <Container fluid className="bg-light min-vh-100">
+  <Row>
+    {/* Sidebar */}
+    <Col md={2} className="bg-dark p-3 border-end shadow-sm">
+      <Nav className="flex-column">
+        <Nav.Link 
+          active={activeTab === "dashboard"} 
+          onClick={() => userRole == 'admin' ? setActiveTab("dashboard") : setGeneralEvents(true)}
+          className="text-light mb-2 p-2 rounded hover-effect"
+        >
+          Dashboard
+        </Nav.Link>
+        <Nav.Link 
+          active={activeTab === "registrations"} 
+          onClick={() => userRole == 'admin' ? setActiveTab("registrations") : handleMyRegistrations()}
+          className="text-light mb-2 p-2 rounded hover-effect"
+        >
+          Registrations
+        </Nav.Link>
+      </Nav>
+    </Col>
 
-        <Col md={10} className="p-4">
-          {activeTab === "dashboard" ? (
-            <>
-              <h1 className="mb-4 text-center">
-                {userRole === "admin" ? "Admin Dashboard" : (generalEvents ? "Events" : "My Registered Events")}
-              </h1>
-            
-      <Card className="mb-4 p-3 shadow-sm">
-        <Row className="align-items-center">
-          <Col md={3}>
-            <Form.Floating>
-              <Form.Control
-                type="date"
-                placeholder="Filter by Date"
-                onChange={(e) => setFilters({ ...filters, date: e.target.value })}
-              />
-              <Form.Label>Date</Form.Label>
-            </Form.Floating>
-          </Col>
-          <Col md={3}>
-            <Form.Floating>
-              <Form.Control
-                type="text"
-                placeholder="Filter by Category"
-                onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-              />
-              <Form.Label>Category</Form.Label>
-            </Form.Floating>
-          </Col>
-          <Col md={3}>
-            <Form.Floating>
-              <Form.Control
-                type="text"
-                placeholder="Filter by Location"
-                onChange={(e) => setFilters({ ...filters, location_id: e.target.value })}
-              />
-              <Form.Label>Location</Form.Label>
-            </Form.Floating>
-          </Col>
-          <Col md={3} className="text-end">
-            {userRole === "admin" ? (
-              <Button variant="outline-success" className="d-flex align-items-center icon-hover" onClick={handleAddEvent}>
-                <PlusCircle size={20} className="me-2" /> Add New Event
-              </Button>
-            ) : (
-              <>
-                {generalEvents ? (
-                  <Button variant="outline-maroon" className="d-flex align-items-center icon-hover" style={{ color: '#800000', borderColor: '#800000' }} onClick={handleMyRegistrations}>
-                    My Registrations
+    {/* Main Content */}
+    <Col md={10} className="p-4 bg-light">
+      {activeTab === "dashboard" ? (
+        <>
+          <h1 className="mb-4 text-center text-dark">
+            {userRole === "admin" ? "Admin Dashboard" : (generalEvents ? "Events" : "My Registered Events")}
+          </h1>
+        
+          {/* Filters Card */}
+          <Card className="mb-4 p-3 shadow-sm bg-white border-0">
+            <Row className="align-items-center">
+              <Col md={3}>
+                <Form.Floating>
+                  <Form.Control
+                    type="date"
+                    placeholder="Filter by Date"
+                    onChange={(e) => setFilters({ ...filters, date: e.target.value })}
+                    className="border-0 shadow-sm"
+                  />
+                  <Form.Label className="text-secondary">Date</Form.Label>
+                </Form.Floating>
+              </Col>
+              <Col md={3}>
+                <Form.Floating>
+                  <Form.Control
+                    type="text"
+                    placeholder="Filter by Category"
+                    onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+                    className="border-0 shadow-sm"
+                  />
+                  <Form.Label className="text-secondary">Category</Form.Label>
+                </Form.Floating>
+              </Col>
+              <Col md={3}>
+                <Form.Floating>
+                  <Form.Control
+                    type="text"
+                    placeholder="Filter by Location"
+                    onChange={(e) => setFilters({ ...filters, location_id: e.target.value })}
+                    className="border-0 shadow-sm"
+                  />
+                  <Form.Label className="text-secondary">Location</Form.Label>
+                </Form.Floating>
+              </Col>
+              <Col md={3} className="text-end">
+                {userRole === "admin" ? (
+                  <Button variant="primary" className="d-flex align-items-center icon-hover shadow-sm" onClick={handleAddEvent}>
+                    <PlusCircle size={20} className="me-2" /> Add New Event
                   </Button>
                 ) : (
-                  <Button variant="outline-primary" className="d-flex align-items-center icon-hover" onClick={handleShowHome}>
-                    Home
-                  </Button>
+                  <>
+                    {generalEvents ? (
+                      <Button variant="outline-secondary" className="d-flex align-items-center icon-hover shadow-sm" onClick={handleMyRegistrations}>
+                        My Registrations
+                      </Button>
+                    ) : (
+                      <Button variant="outline-primary" className="d-flex align-items-center icon-hover shadow-sm" onClick={handleShowHome}>
+                        Home
+                      </Button>
+                    )}
+                  </>
                 )}
-              </>
-            )}
-          </Col>
-        </Row>
-      </Card>
+              </Col>
+            </Row>
+          </Card>
 
-      {locationData && generalEvents ?  (
-        <Card className="p-3 shadow-sm">
-          <Row xs={1} md={2} lg={3} className="g-4">
-            {currentEvents.length > 0 ? (
-              currentEvents.map((event) => (
-                <Col key={event.id}>
-                  <Card className="shadow-sm border-0 hover-effect">
-                    <Card.Body>
-                      <Card.Title className="d-flex justify-content-between align-items-center">
-                        {event.title}
-                        {userRole === "admin" ? (
-                          <span>
-                            <PenTool size={20} className="text-warning me-2 cursor-pointer icon-hover" title="Edit Event" onClick={(e) => handleEdit(event)} />
-                            <Trash size={20} className="text-danger cursor-pointer icon-hover" title="Delete Event" onClick={(e) => handleDelete(event.id, event.title)} />
-                          </span>
-                        ) : (
-                            <UserPlus size={15} className="text-success me-2 cursor-pointer icon-hover"  onClick={(e) => handleRegister(user, event)} /> 
-                          
-                        )}
-                      </Card.Title>
-                      <Card.Text>{event.description}</Card.Text>
-                      <Card.Text><strong>Date:</strong> {formatDate(event.date)}</Card.Text>
-                      <Card.Text>
-  <strong>Location:</strong> 
-  {locationData?.find((obj) => obj.id === event.location_id)?.name || "Unknown Location"}
-</Card.Text>
-
-
-
-                       </Card.Body>
-                  </Card>
-                </Col>
-              ))
-            ) : (
-          <h1>No Data as searched</h1>
-            )}
-          </Row>
-        </Card>
-      ) : (
-        <RegisteredEvents user={user} locationData={locationData} filteredEvents={filteredEvents} />
-      )}
-
-      {filteredEvents.length > eventsPerPage && (
-        <Pagination className="justify-content-center mt-4">
-          <Pagination.Prev onClick={prevPage} disabled={currentPage === 1} />
-          {Array.from({ length: totalPages }, (_, index) => (
-            <Pagination.Item
-              key={index + 1}
-              active={index + 1 === currentPage}
-              onClick={() => setCurrentPage(index + 1)}
-            >
-              {index + 1}
-            </Pagination.Item>
-          ))}
-          <Pagination.Next onClick={nextPage} disabled={currentPage === totalPages} />
-        </Pagination>
-      )}
-
-      <AddEventModal show={showAddEventModal} handleClose={handleCloseModal} availableLocations={availableLocations} user={user} rowData={rowData} action={action} />
-            </>
+          {/* Events Grid */}
+          {locationData && generalEvents ?  (
+            <Card className="p-3 shadow-sm bg-white border-0">
+              <Row xs={1} md={2} lg={3} className="g-4">
+                {currentEvents.length > 0 ? (
+                  currentEvents.map((event) => (
+                    <Col key={event.id}>
+                      <Card className="shadow-sm border-0 hover-effect">
+                        <Card.Body>
+                          <Card.Title className="d-flex justify-content-between align-items-center text-dark">
+                            {event.title}
+                            {userRole === "admin" ? (
+                              <span>
+                                <PenTool size={20} className="text-warning me-2 cursor-pointer icon-hover" title="Edit Event" onClick={(e) => handleEdit(event)} />
+                                <Trash size={20} className="text-danger cursor-pointer icon-hover" title="Delete Event" onClick={(e) => handleDelete(event.id, event.title)} />
+                              </span>
+                            ) : (
+                                <UserPlus size={15} className="text-success me-2 cursor-pointer icon-hover"  onClick={(e) => handleRegister(user, event)} /> 
+                              
+                            )}
+                          </Card.Title>
+                          <Card.Text className="text-secondary">{event.description}</Card.Text>
+                          <Card.Text className="text-secondary"><strong>Date:</strong> {formatDate(event.date)}</Card.Text>
+                          <Card.Text className="text-secondary">
+                            <strong>Location:</strong> 
+                            {locationData?.find((obj) => obj.id === event.location_id)?.name || "Unknown Location"}
+                          </Card.Text>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  ))
+                ) : (
+                  <h1 className="text-center text-secondary">No Data as searched</h1>
+                )}
+              </Row>
+            </Card>
           ) : (
-            <AdminRegistrations locationData= {locationData}/>
+            <RegisteredEvents user={user} locationData={locationData} filteredEvents={filteredEvents} />
           )}
-        </Col>
-      </Row>
-    </Container>
+
+          {/* Pagination */}
+          {filteredEvents.length > eventsPerPage && (
+            <Pagination className="justify-content-center mt-4">
+              <Pagination.Prev onClick={prevPage} disabled={currentPage === 1} className="border-0 shadow-sm" />
+              {Array.from({ length: totalPages }, (_, index) => (
+                <Pagination.Item
+                  key={index + 1}
+                  active={index + 1 === currentPage}
+                  onClick={() => setCurrentPage(index + 1)}
+                  className="border-0 shadow-sm"
+                >
+                  {index + 1}
+                </Pagination.Item>
+              ))}
+              <Pagination.Next onClick={nextPage} disabled={currentPage === totalPages} className="border-0 shadow-sm" />
+            </Pagination>
+          )}
+
+          {/* Add Event Modal */}
+          <AddEventModal show={showAddEventModal} handleClose={handleCloseModal} availableLocations={availableLocations} user={user} rowData={rowData} action={action} />
+        </>
+      ) : (
+        <AdminRegistrations locationData= {locationData}/>
+      )}
+    </Col>
+  </Row>
+</Container>
   );
 }
 
