@@ -28,49 +28,42 @@ router.get("/", async (req, res) => {
 
 // Add or update an event
 router.post("/addOrUpdate", async (req, res) => {
-    try {
-        const { id, title, description, date, category, location_id } = req.body;
+  try {
+      const { id, title, description, date, category, location_id } = req.body;
 
-        // Validate required fields
-        console.log("inside reqbody", req.body)
-        if (!title || !description || !date || !category || !location_id) {
-            return res.status(400).json({ message: "All fields are required" });
-        }
+      // Validate required fields
+      console.log("inside reqbody", req.body)
+      if (!title || !description || !date || !category || !location_id) {
+          return res.status(400).json({ message: "All fields are required" });
+      }
 
-        if (id) {
-            // Update event if ID exists
-            const updated = await db("events").where({ id }).update({
-                title,
-                description,
-                date,
-                category,
-                location_id,
-                sk: `event#${id}`
-            });
-            
-            if (updated) {
-                return res.status(200).json({ message: "Event updated successfully", eventId: id, sk: `event#${id}` });
-            } else {
-                return res.status(404).json({ message: "Event not found for update" });
-            }
-        } else {
-            // Create new event if ID is not provided
-            req.body.created_at = new Date();
-            const [eventId] = await db("events").insert(
-               req.body
-            );
-            res.status(201).json({ message: {title} + " Event created successfully" });
-            
-            // if (eventId) {
-            //     await db("events").where({ id: eventId }).update({ sk: `event#${eventId}` });
-            //     res.status(201).json({ message: "Event created successfully", eventId, sk: `event#${eventId}` });
-            // }
-        }
-    } catch (error) {
-        console.error("Failed to add/update event:", error);
-        res.status(500).json({ message: "Failed to add/update event", error });
-    }
+      if (id) {
+          // Update event if ID exists
+          const updated = await db("events").where({ id }).update({
+              title,
+              description,
+              date,
+              category,
+              location_id
+          });
+          
+          if (updated) {
+              return res.status(200).json({ message: "Event updated successfully", eventId: id });
+          } else {
+              return res.status(404).json({ message: "Event not found for update" });
+          }
+      } else {
+          // Create new event if ID is not provided
+          req.body.created_at = new Date();
+          const [eventId] = await db("events").insert(req.body);
+          res.status(201).json({ message: `${title} Event created successfully`, eventId });
+      }
+  } catch (error) {
+      console.error("Failed to add/update event:", error);
+      res.status(500).json({ message: "Failed to add/update event", error });
+  }
 });
+
 
 // Register a user for an event
 router.post("/:id/register", async (req, res) => {
@@ -102,27 +95,29 @@ router.post("/:id/register", async (req, res) => {
 
 // Delete an event
 router.post("/delete", async (req, res) => {
+  const { id } = req.body;
+
   try {
-      const { id } = req.body;
+    // Delete registrations first
+    await db("event_registrations").where({ event_id: id }).del();
+    
+    // Then delete the event
+    const deletedCount = await db("events").where({ id }).del();
 
-      if (!id) {
-          return res.status(400).json({ message: "Event ID is required" });
-      }
-
-      const deletedRows = await db("events").where({ id }).del();
-
-      if (deletedRows) {
-        console.log("ins")
-          res.status(200).json({ message: `Event with ID ${id} deleted successfully` });
-      } else {
-        console.log("insno")
-          res.status(404).json({ message: "Event not found" });
-      }
+    if (deletedCount) {
+      res.status(200).json({ message: "Event and related registrations deleted successfully" });
+    } else {
+      res.status(404).json({ message: "Event not found" });
+    }
   } catch (error) {
-      console.error("Failed to delete event:", error);
-      res.status(500).json({ message: "Failed to delete event", error });
+    console.error("Failed to delete event:", error);
+    res.status(500).json({ message: "Failed to delete event", error });
   }
 });
+
+
+
+
 
 
 module.exports = router;
