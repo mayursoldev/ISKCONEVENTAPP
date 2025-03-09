@@ -1,8 +1,8 @@
 import { useContext, useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import { X } from 'react-feather';
-import GlobalContext from "../context/GlobalContext";
-import { showConfirmationDialog } from "../common/commonMethods";
+import GlobalContext from "../../context/GlobalContext";
+import { showConfirmationDialog } from "../../common/commonMethods";
 import Swal from "sweetalert2";
 
 function AddEventModal({ show, handleClose, availableLocations, user, rowData, action }) {

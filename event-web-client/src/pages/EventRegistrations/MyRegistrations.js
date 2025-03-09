@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Container, Row, Col, Card, Button, Pagination } from "react-bootstrap";
-import { fetchUserRegisteredEvents } from "../service/event-service";
-import { formatDate } from "../common/commonMethods";
+import { fetchUserRegisteredEvents } from "../../service/event-service";
+import { formatDate } from "../../common/commonMethods";
 
 function RegisteredEvents({ user, locationData}) {
     const [registeredEvents, setRegisteredEvents] = useState([]);

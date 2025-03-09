@@ -1,8 +1,8 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Form, Button, Tabs, Tab } from 'react-bootstrap';
-import GlobalContext from "../context/GlobalContext";
-import '../App.css';
+import GlobalContext from "../../context/GlobalContext";
+import '../../App.css';
 
 function Login() {
   const [email, setEmail] = useState("");

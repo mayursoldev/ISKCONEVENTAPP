@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Table, Container, Pagination } from "react-bootstrap";
-import { fetchAllRegistrations } from "../service/event-service";
-import { formatDate } from "../common/commonMethods";
+import { fetchAllRegistrations } from "../../service/event-service";
+import { formatDate } from "../../common/commonMethods";
 
 function AdminRegistrations() {
   const [registrations, setRegistrations] = useState([]);

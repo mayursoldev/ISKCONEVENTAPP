@@ -1,13 +1,13 @@
 import { useContext, useEffect, useState } from "react";
 import { Container, Row, Col, Card, Form, Pagination, Button, Nav } from "react-bootstrap";
 import { PlusCircle, PenTool, Trash, UserPlus } from 'react-feather';
-import GlobalContext from "../context/GlobalContext";
-import AddEventModal from "./AddEventModal";
-import { FetchLocations } from "../service/location-service";
-import {   formatDate, showConfirmationDialog } from "../common/commonMethods";
-import { deleteEvent, registerForEvent } from "../service/event-service";
-import RegisteredEvents from "./MyRegistrations";
-import AdminRegistrations from "./AdminRegistrations";
+import GlobalContext from "../../context/GlobalContext";
+import AddEventModal from "../EventRegistrations/AddEventModal";
+import { FetchLocations } from "../../service/location-service";
+import {   formatDate, showConfirmationDialog } from "../../common/commonMethods";
+import { deleteEvent, registerForEvent } from "../../service/event-service";
+import RegisteredEvents from "../EventRegistrations/MyRegistrations";
+import AdminRegistrations from "../EventRegistrations/AdminRegistrations";
 import Swal from "sweetalert2";
 
 function Home() {

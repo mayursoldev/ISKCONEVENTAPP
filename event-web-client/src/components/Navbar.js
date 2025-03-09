@@ -1,7 +1,6 @@
 import { useContext, useState } from "react";
 import GlobalContext from "../context/GlobalContext";
 import { Link } from "react-router-dom";
-import Home from "../pages/Home";
 import { getInitials } from "../common/commonMethods";
 
 function Navbar() {
